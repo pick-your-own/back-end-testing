@@ -99,12 +99,25 @@ async function handleAttackAction(playerGearScore, enemyLevel) {
     console.log('You have been defeated. Game over.');
     // Implement game over logic here, such as resetting progress or ending the game
   } else if (enemyHealth <= 0) {
-    console.log('Congratulations! You have defeated the enemy.');
+    const defeated = eventPool.ENEMY_KILLED;
+    console.log(`Congratulations! You have ${defeated} the enemy.`);
     // Implement victory logic here, such as gaining rewards or progressing to the next level
-    const loot = eventPool.CHARACTER_ACTION_PICKUP;
-
+    const loot = eventPool.LOOT_DROP;
     // Process the loot event
-    console.log(`You have received ${loot} from the enemy.`);
+    console.log(`The enemy has dropped ${loot}!`);
+
+    const pickUp = eventPool.CHARACTER_ACTION_PICKUP;
+    console.log(``);
+
+    // Add loot to Character's inventory
+    const inventory = eventPool.CHARACTER_INVENTORY;
+
+    inventory.push(loot);
+    console.log(`You added ${loot} to your ${inventory}`);
+
+    // Level Up the player
+    const levelUpEvent = eventPool.CHARACTER_ACTION_LEVELED_UP;
+    eventEmitter.emit(levelUpEvent); //! Remember to add Listener for CHARACTER_LEVELED_UP event
   } else {
     console.log(`Player Health: ${playerHealth}`);
     console.log(`Enemy Health: ${enemyHealth}`);
