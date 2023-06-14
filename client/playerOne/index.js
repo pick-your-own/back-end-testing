@@ -18,6 +18,7 @@ mongoose
   })
   .catch((error) => console.error('MongoDB connection error:', error));
 
+let username = '';
 
 socket.on(eventPool.GAME_INQ, () => {
 
@@ -41,6 +42,7 @@ socket.on(eventPool.GAME_INQ, () => {
                 const enteredPassword = answer.password;
                 // Compare the entered password with the password in the database
                 if (enteredPassword === user.password) {
+                  username = user.name;
                   socket.emit(eventPool.JOIN);
                 } else {
                   console.log('Incorrect password');
@@ -105,15 +107,15 @@ socket.on(eventPool.ROOM_MENU, () => {
         break;
       case 2:
         console.log('Selected: Play with friends');
-        socket.emit('JOIN', 'joinFriends');
+        socket.emit(eventPool.CHAT_JOINED, 'joinFriends');
         break;
       case 3:
         console.log('Selected: Play alone');
-        socket.emit('JOIN', socket.id);
+        socket.emit(eventPool.CHAT_JOINED, socket.id);
         break;
       case 4:
         console.log('Selected: Play with randoms');
-        socket.emit('JOIN', 'joinRandoms');
+        socket.emit(eventPool.CHAT_JOINED, 'joinRandoms');
         break;
       default:
         console.log('Invalid option');
@@ -122,23 +124,43 @@ socket.on(eventPool.ROOM_MENU, () => {
     });
 });
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
+socket.on(eventPool.CHAT_MESSAGE, () => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const sendMessage = () => {
+    rl.question('Enter message (or type "exit" to quit): ', (message) => {
+      // console.log(message);
+      if (message.toLowerCase() === 'exit') {
+        rl.close();
+        socket.emit(eventPool.JOIN);
+        return;
+      }
+      socket.emit(eventPool.SEND_MESSAGE, { sender: username, message });  // Emit the message to all clients
+      sendMessage();
+    });
+  };
+
+  sendMessage();
+});
+
+socket.on(eventPool.SEND_MESSAGE, (data) => {
+  const { sender, message } = data;
+  const formattedMessage = `${colorGreenLight}${sender.padStart(70)}:${colorReset} ${colorCyan}${message}`;
+  console.log(formattedMessage);
+  socket.emit(eventPool.CHAT_MESSAGE, { sender, message });  // Broadcast the message to all clients except the sender
 });
 
 socket.on(eventPool.CHAT_JOINED, (payload) => {
   console.log(payload);
 });
 
-rl.on(eventPool.LINE, (input) => {
-  socket.emit('chatMessage', input);
-});
-
-socket.on(eventPool.CHAT_MESSAGE, (message) => {
-  console.log('Message: ', message);
-});
-
-rl.on(eventPool.CLOSE, () => {
+socket.on(eventPool.CLOSE, () => {
   process.exit(0);
 });
+
+const colorReset = '\x1b[0m';
+const colorCyan = '\x1b[36m';
+const colorGreenLight = '\x1b[92m';

@@ -54,12 +54,5 @@ db.once('open', async () => {
 //   process.exit();
 // });
 
-// const testEvent = new TestEvent();
-
-// testEvent.run().then((result) => {
-//   console.log(result);
-//   process.exit();
-// });
-
 
 
