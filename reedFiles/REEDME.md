@@ -1,7 +1,3 @@
-# back-end-testing
-
-- Schemas for clients, users, loot, and dungeons.
-
 # CHAT RPGT
 
 The OpenAI ChatGPT RPG Game
