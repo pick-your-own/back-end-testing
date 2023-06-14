@@ -58,6 +58,7 @@ const eventPool = {
   CHARACTER_ACTION_HEAL: 'character_action_heal',
   CHARACTER_ACTION_FLEE: 'character_action_flee',
   CHARACTER_ACTION_CUSTOM: 'character_action_custom',
+  CHARACTER_ACTION_PICKUP: 'character_action_pickup',
 
   ENEMY_SPAWN: 'enemy_spawn',
   ENEMY_KILLED: 'enemy_killed',
