@@ -5,7 +5,9 @@ const io = require('socket.io-client');
 const inquirer = require('inquirer');
 const mongoose = require('mongoose');
 const socket = io('http://localhost:3001');
-const { User } = require('../../src/models/user');
+const { eventPool } = require('../../src/eventPool');
+const { User } = require('../../src/models/User');
+const readline = require('readline');
 
 console.log('YO');
 
@@ -16,7 +18,8 @@ mongoose
   })
   .catch((error) => console.error('MongoDB connection error:', error));
 
-socket.on('inq', () => {
+
+socket.on(eventPool.GAME_INQ, () => {
 
   inquirer.prompt({
     name: 'username',
@@ -38,7 +41,7 @@ socket.on('inq', () => {
                 const enteredPassword = answer.password;
                 // Compare the entered password with the password in the database
                 if (enteredPassword === user.password) {
-                  socket.emit('userJoined');
+                  socket.emit(eventPool.JOIN);
                 } else {
                   console.log('Incorrect password');
                 }
@@ -79,7 +82,7 @@ socket.on('inq', () => {
     });
 });
 
-socket.on('menu', () => {
+socket.on(eventPool.ROOM_MENU, () => {
   inquirer.prompt([
     {
       name: 'menuChoice',
@@ -98,23 +101,44 @@ socket.on('menu', () => {
       switch (selectedOption) {
       case 1:
         console.log('Selected: Chat');
-        socket.emit('joinChat');
+        socket.emit(eventPool.CHAT_JOINED, 'Chat');
         break;
       case 2:
         console.log('Selected: Play with friends');
-        socket.emit('joinFriends');
+        socket.emit('JOIN', 'joinFriends');
         break;
       case 3:
         console.log('Selected: Play alone');
-        socket.emit('playAlone');
+        socket.emit('JOIN', socket.id);
         break;
       case 4:
         console.log('Selected: Play with randoms');
-        socket.emit('joinRandoms');
+        socket.emit('JOIN', 'joinRandoms');
         break;
       default:
         console.log('Invalid option');
         break;
       }
     });
+});
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+socket.on(eventPool.CHAT_JOINED, (payload) => {
+  console.log(payload);
+});
+
+rl.on(eventPool.LINE, (input) => {
+  socket.emit('chatMessage', input);
+});
+
+socket.on(eventPool.CHAT_MESSAGE, (message) => {
+  console.log('Message: ', message);
+});
+
+rl.on(eventPool.CLOSE, () => {
+  process.exit(0);
 });

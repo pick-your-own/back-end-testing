@@ -5,7 +5,9 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const { Server } = require('socket.io');
-
+// const { User, Character } = require('./models');
+const { eventPool } = require('./eventPool');
+// const { characterController, userController } = require('./controllers');
 
 // io server singleton
 const io = new Server(server);
@@ -33,40 +35,197 @@ app.use(dungeonRouter);
 
 // create / allow for connections to server
 io.on('connection', (socket) => {
-  socket.emit('inq');
+  socket.emit(eventPool.GAME_INQ);
 
   // notification for player join room
-  socket.on('userJoined', () => {
-    console.log('User joined');
-    socket.emit('menu');
+  socket.on(eventPool.JOIN, () => {
+    console.log(eventPool.JOINED_CHAT);
+    socket.emit(eventPool.ROOM_MENU);
   });
 
-  socket.on('joinChat', (socket)=>{
-    socket.join('room1');
-    socket.to('room1').emit(`${socket.id} has joined the chat`);
-  });
-
-  socket.on('joinFriends', (socket)=>{
-    socket.join('room2');
-    socket.to('room1').emit(`${socket.id} has joined chat`);
-  });
-
-  socket.on('playAlone', (socket)=>{
-    socket.join('room4');
-    socket.to('room4').emit(`${socket.id} has joined chat`);
-  });
-
-  socket.on('joinRandoms', (socket)=>{
-    socket.join('room5');
-    socket.to('room5').emit(`${socket.id} has joined chat`);
+  socket.on(eventPool.CHAT_JOINED, (room) => {
+    socket.join(room);
+    socket.to(room).emit(''`${socket.id} has joined chat`);
+    
   });
 
   // notification for chat message
-  socket.on('chat message', (message) => {
+  socket.on(eventPool.SEND_MESSAGE, (message) => {
     console.log(`Received message from ${socket.id}: ${message}`);
     // broadcasts chat to everyone
-    socket.broadcast.emit('chat message', message);
+    socket.broadcast.emit(eventPool.SEND_MESSAGE, message);
   });
+  
+  // // User creates a character
+  // socket.on(eventPool.CHARACTER_CREATE, async (username, characterData) => {
+  //   console.log(`${username} created a new character: ${characterData.name}`);
+  //   try {
+  //     // Save the character to the database
+  //     const character = await Character.create(characterData);
+
+  //     // Update the user's defaultCharacter field with the created character's ID
+  //     const user = await User.findOneAndUpdate(
+  //       { username },
+  //       { defaultCharacter: character._id },
+  //       { new: true },
+  //     );
+
+  //     console.log(`Character ${character.name} created`);
+  //     socket.emit(eventPool.CHARACTER_CREATE_SUCCESS, { character });
+  //     socket.user = user; // Update the user object stored in the socket
+
+  //     io.emit(eventPool.CHARACTER_CREATE, character);
+  //   } catch (error) {
+  //     console.error('Error creating character:', error);
+  //     socket.emit(eventPool.CHARACTER_CREATE_ERROR, {
+  //       message: 'Could not create character',
+  //     });
+  //   }
+  // });
+  // socket.on(eventPool.CHARACTER_JOIN, async (characterId) => {
+  //   try {
+  //     // Find the character in the database
+  //     const character = await Character.findById(characterId);
+  //     console.log('Character joined');
+  //     socket.emit(eventPool.CHARACTER_JOIN_SUCCESS, { character });
+  //     startGame(socket, characterId); // Call the startGame function and pass the socket and characterId
+  //   } catch (error) {
+  //     console.error('Error joining character:', error);
+  //     socket.emit(eventPool.CHARACTER_JOIN_ERROR, {
+  //       message: 'Could not join character',
+  //     });
+  //   }
+  // });
+  // // Character attacks
+  // socket.on(eventPool.CHARACTER_ACTION_ATTACK, async (characterId) => {
+  //   let character = characterQueue.read(characterId);
+  //   let message = '';
+  //   try {
+  //     const response = await axios.post(
+  //       'https://api.openai.com/v1/engines/davinci-codex/completions',
+  //       {
+  //         prompt: `${character.name} attacks the dragon. What happens next?`,
+  //         max_tokens: 100,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+  //         },
+  //       },
+  //     );
+
+  //     message = response.data.choices[0].text;
+  //   } catch (error) {
+  //     console.error('Error interacting with OpenAI API:', error);
+  //   }
+  //   console.log(message);
+
+  //   // Emit the event with the updated message
+  //   io.emit(eventPool.CHARACTER_ACTION_ATTACK, { characterId, message });
+  // });
+
+  // // Character defends
+  // socket.on(eventPool.CHARACTER_ACTION_DEFEND, async (characterId) => {
+  //   let character = characterQueue.read(characterId);
+  //   // Character defends, increase defense temporarily
+
+  //   // Generate storyline response with OpenAI API
+  //   const response = await axios.post(
+  //     'https://api.openai.com/v1/engines/davinci-codex/completions',
+  //     {
+  //       prompt: `${character.name} defends. What happens next?`,
+  //       max_tokens: 100,
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+  //       },
+  //     },
+  //   );
+  //   const message = response.data.choices[0].text;
+  //   console.log(message);
+
+  //   io.emit(eventPool.CHARACTER_ACTION_DEFEND, { characterId, message });
+  // });
+
+  // // Character heals
+  // socket.on(eventPool.CHARACTER_ACTION_HEAL, async (characterId) => {
+  //   let character = characterQueue.read(characterId);
+  //   // Character heals, increase health
+
+  //   // Generate storyline response with OpenAI API
+  //   const response = await axios.post(
+  //     'https://api.openai.com/v1/engines/davinci-codex/completions',
+  //     {
+  //       prompt: `${character.name} heals. What happens next?`,
+  //       max_tokens: 100,
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+  //       },
+  //     },
+  //   );
+  //   const message = response.data.choices[0].text;
+  //   console.log(message);
+
+  //   io.emit(eventPool.CHARACTER_ACTION_HEAL, { characterId, message });
+  // });
+
+  // // Character flees
+  // socket.on(eventPool.CHARACTER_ACTION_FLEE, async (characterId) => {
+  //   let character = characterQueue.read(characterId);
+  //   // Character flees, set health to full and decrease experience
+
+  //   // Generate storyline response with OpenAI API
+  //   const response = await axios.post(
+  //     'https://api.openai.com/v1/engines/davinci-codex/completions',
+  //     {
+  //       prompt: `${character.name} flees. What happens next?`,
+  //       max_tokens: 100,
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+  //       },
+  //     },
+  //   );
+  //   const message = response.data.choices[0].text;
+  //   console.log(message);
+
+  //   io.emit(eventPool.CHARACTER_ACTION_FLEE, { characterId, message });
+  // });
+
+  // // Character performs a custom action
+  // socket.on(
+  //   eventPool.CHARACTER_ACTION_CUSTOM,
+  //   async (characterId, customAction) => {
+  //     let character = characterQueue.read(characterId);
+  //     let message = '';
+  //     try {
+  //       const response = await axios.post(
+  //         'https://api.openai.com/v1/engines/davinci-codex/completions',
+  //         {
+  //           prompt: `${character.name} ${customAction}. What happens next?`,
+  //           max_tokens: 100,
+  //         },
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+  //           },
+  //         },
+  //       );
+
+  //       message = response.data.choices[0].text;
+  //       console.log(message);
+  //     } catch (error) {
+  //       console.error('Error interacting with OpenAI API:', error);
+  //     }
+
+  //     // Emit the event with the updated message
+  //     io.emit(eventPool.CHARACTER_ACTION_CUSTOM, { characterId, message });
+  //   },
+  // );
   // notification for player disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected');
