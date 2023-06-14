@@ -31,29 +31,32 @@ app.use(lootRouter);
 app.use(userRouter);
 app.use(dungeonRouter);
 
-// const rooms = new Map();
+const connectedClients = new Map();// new code
 
 // create / allow for connections to server
 io.on('connection', (socket) => {
+  connectedClients.set(socket.id, socket); // new code
   socket.emit(eventPool.GAME_INQ);
 
   // notification for player join room
   socket.on(eventPool.JOIN, () => {
-    console.log(eventPool.JOINED_CHAT);
+    console.log('player logged in');
     socket.emit(eventPool.ROOM_MENU);
   });
 
   socket.on(eventPool.CHAT_JOINED, (room) => {
     socket.join(room);
-    socket.to(room).emit(''`${socket.id} has joined chat`);
+    socket.emit(eventPool.CHAT_MESSAGE, `${socket.id} has joined chat`);
+    console.log(room);
+    console.log('++++++++', socket.rooms);
     
   });
 
   // notification for chat message
   socket.on(eventPool.SEND_MESSAGE, (message) => {
-    console.log(`Received message from ${socket.id}: ${message}`);
+    // console.log(`Received message from ${socket.id}: ${message}`);
     // broadcasts chat to everyone
-    socket.broadcast.emit(eventPool.SEND_MESSAGE, message);
+    io.emit(eventPool.SEND_MESSAGE, message);
   });
   
   // // User creates a character
