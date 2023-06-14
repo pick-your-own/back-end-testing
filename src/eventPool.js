@@ -76,6 +76,14 @@ const eventPool = {
   CLOSE: 'close',
   JOIN: 'join',
 
+  CREATE_ROOM: 'createRoom',
+  CREATE_ROOM_SUCCESS: 'createRoomSuccess',
+  JOIN_ROOM: 'joinRoom',
+  JOIN_ROOM_SUCCESS: 'joinRoomSuccess',
+  JOIN_ROOM_ERROR: 'joinRoomError',
+  USER_JOINED_ROOM: 'userJoinedRoom',
+  USER_LEFT_ROOM: 'userLeftRoom',
+
   // Dungeon Events
   DUNGEON_CREATE: 'dungeon_create',
   DUNGEON_CREATE_SUCCESS: 'dungeon_create_success',
