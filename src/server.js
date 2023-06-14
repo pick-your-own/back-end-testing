@@ -56,7 +56,7 @@ io.on('connection', (socket) => {
   socket.on(eventPool.SEND_MESSAGE, (message) => {
     // console.log(`Received message from ${socket.id}: ${message}`);
     // broadcasts chat to everyone
-    io.emit(eventPool.SEND_MESSAGE, message);
+    io.emit(eventPool.SEND_MESSAGE,  message);
   });
   
   // // User creates a character

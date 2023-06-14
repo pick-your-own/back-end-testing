@@ -157,6 +157,30 @@ socket.on(eventPool.CHAT_JOINED, (payload) => {
   console.log(payload);
 });
 
+socket.on(eventPool.CREATE_ROOM_SUCCESS, (roomId) => {
+  console.log(`Room created. ID: ${roomId}`);
+  this.roomId = roomId;
+  socket.emit(eventPool.JOIN_ROOM, roomId);
+});
+
+socket.on(eventPool.JOIN_ROOM_SUCCESS, (roomId) => {
+  console.log(`Joined room. ID: ${roomId}`);
+});
+
+socket.on(eventPool.JOIN_ROOM_ERROR, (error) => {
+  console.error('Error joining room:', error);
+});
+
+socket.on(eventPool.USER_JOINED_ROOM, (userList) => {
+  console.log('User joined the room');
+  console.log('Connected users:', userList);
+});
+
+socket.on(eventPool.USER_LEFT_ROOM, (userList) => {
+  console.log('User left the room');
+  console.log('Connected users:', userList);
+});
+
 socket.on(eventPool.CLOSE, () => {
   process.exit(0);
 });
