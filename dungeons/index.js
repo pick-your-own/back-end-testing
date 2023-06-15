@@ -5,8 +5,8 @@ const io = require('socket.io-client');
 const mongoose = require('mongoose');
 const socket = io('http://localhost:3001');
 const inquirer = require('inquirer');
-const { eventPool } = require('../../src/eventPool');
-const { Dungeon } = require('../../src/models/Dungeon');
+const { eventPool } = require('../src/eventPool');
+const { Dungeon } = require('../src/models/Dungeon');
 
 console.log('RAWR');
 

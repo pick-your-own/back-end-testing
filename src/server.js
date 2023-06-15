@@ -8,7 +8,7 @@ const { Server } = require('socket.io');
 // const { User, Character } = require('./models');
 const { eventPool } = require('./eventPool');
 // const { characterController, userController } = require('./controllers');
-
+// const { generateEncounter, createDungeonRoom, handleAttackAction } = require('../dungeons');
 // io server singleton
 const io = new Server(server);
 const cors = require('cors');
@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
     socket.join(room);
     socket.emit(eventPool.CHAT_MESSAGE, `${socket.id} has joined chat`);
     console.log(room);
-    console.log('++++++++', socket.rooms);
+    socket.emit(eventPool.DUNGEON_MENU);
     
   });
 
@@ -58,6 +58,36 @@ io.on('connection', (socket) => {
     // broadcasts chat to everyone
     io.emit(eventPool.SEND_MESSAGE,  message);
   });
+
+  socket.on(eventPool.DUNGEON_CREATE, () => {
+    console.log('Dungeon Created');
+    socket.emit(eventPool.DUNGEON_MENU);
+  });
+  
+  socket.on(eventPool.DUNGEON_JOIN_HARD, () => {
+    createDungeonRoom();
+    console.log('Dungeon hard mode');
+  });
+  
+  socket.on(eventPool.DUNGEON_JOIN_NORMAL, () => {
+    createDungeonRoom();
+    console.log('Dungeon normal mode');
+  });
+
+  socket.on(eventPool.DUNGEON_JOIN_EASY, () => {
+    createDungeonRoom();
+    console.log('Dungeon easy mode');
+  });
+
+
+  socket.on(eventPool.DUNGEON_START, () => {
+    console.log('Dungeon Started');
+  });
+  
+  socket.on(eventPool.DUNGEON_LEAVE, () => {
+    console.log('Dungeon Left');
+  });
+  
   
   // // User creates a character
   // socket.on(eventPool.CHARACTER_CREATE, async (username, characterData) => {

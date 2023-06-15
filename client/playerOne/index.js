@@ -107,7 +107,7 @@ socket.on(eventPool.ROOM_MENU, () => {
         break;
       case 2:
         console.log('Selected: Play with friends');
-        socket.emit(eventPool.CHAT_JOINED, 'joinFriends');
+        socket.emit(eventPool.CHAT_JOINED && eventPool.DUNGEON_CREATE, 'joinFriends');
         break;
       case 3:
         console.log('Selected: Play alone');
@@ -119,6 +119,38 @@ socket.on(eventPool.ROOM_MENU, () => {
         break;
       default:
         console.log('Invalid option');
+        break;
+      }
+    });
+});
+
+socket.on(eventPool.DUNGEON_MENU, () => {
+  inquirer.prompt([
+    {
+      name: 'dungeonOptions',
+      type: 'rawlist',
+      message: 'What level dungeon do you want to do?',
+      choices: [
+        { name: 'Easy', value: 1 },
+        { name: 'Normal', value: 2 },
+        { name: 'Hard', value: 3 },
+      ],
+    },
+  ])
+    .then((answer) => {
+      const selectedOption = answer.dungeonOptions;
+      switch (selectedOption) {
+      case 1:
+        console.log('Selected easy');
+        socket.emit(eventPool.DUNGEON_JOIN_EASY);
+        break;
+      case 2:
+        console.log('Selected normal');
+        socket.emit(eventPool.DUNGEON_JOIN_NORMAL);
+        break;
+      case 3:
+        console.log('Selected hard');
+        socket.emit(eventPool.DUNGEON_JOIN_HARD);
         break;
       }
     });
