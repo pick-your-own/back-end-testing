@@ -98,13 +98,28 @@ async function handleAttackAction(playerGearScore, enemyLevel) {
   if (playerHealth <= 0) {
     console.log('You have been defeated. Game over.');
     // Implement game over logic here, such as resetting progress or ending the game
-  } else if (enemyHealth <= 0) {
-    console.log('Congratulations! You have defeated the enemy.');
-    // Implement victory logic here, such as gaining rewards or progressing to the next level
-    const loot = eventPool.CHARACTER_ACTION_PICKUP;
 
+  } else if (enemyHealth <= 0) {
+    eventPool.ENEMY_KILLED;
+    console.log(`Congratulations! You have defeated the enemy.`);
+    // Implement victory logic here, such as gaining rewards or progressing to the next level
+    const loot = eventPool.LOOT_DROP;
     // Process the loot event
-    console.log(`You have received ${loot} from the enemy.`);
+    console.log(`The enemy has dropped ${loot}!`);
+
+    eventPool.CHARACTER_ACTION_PICKUP;
+    console.log(`You picked up ${loot}!`);
+
+    // Add loot to Character's inventory
+    const inventory = eventPool.CHARACTER_INVENTORY;
+
+    inventory.push(loot);
+    console.log(`You added ${loot} to your ${inventory}.`);
+
+    // Level Up the player
+    // const levelUpEvent = eventPool.CHARACTER_ACTION_LEVELED_UP;
+    // eventEmitter.emit(levelUpEvent); //! Remember to add Listener for CHARACTER_LEVELED_UP event. *Might have to put this after all combat and loot goes out.
+
   } else {
     console.log(`Player Health: ${playerHealth}`);
     console.log(`Enemy Health: ${enemyHealth}`);
@@ -116,6 +131,39 @@ async function handleAttackAction(playerGearScore, enemyLevel) {
 // Function to create a dungeon room and await encounters
 async function createDungeonRoom(playerGearScore, roomLevel) {
   console.log('Welcome to the dungeon room!');
+
+  const difficultyLevel = await inquirer.prompt({
+    type: 'list',
+    name: 'difficulty',
+    message: 'What difficulty level would you like to play?',
+    choices: ['Easy', 'Normal', 'Hard'],
+  });
+
+  let successProbability = 0;
+
+  switch (difficultyLevel.difficulty) {
+  case 'Easy':
+    successProbability = 0.8;
+    break;
+  case 'Normal':
+    successProbability = 0.5;
+    break;
+  case 'Hard':
+    successProbability = 0.2;
+    break;
+  default:
+    successProbability = 0.5;
+  }
+
+
+  const roomData = await inquirer.prompt({
+    type: 'input',
+    name: 'roomName',
+    message: 'What would you like to name this room?',
+  });
+
+  // Process Room Data and create a room
+  console.log(`You have entered the ${roomData.roomName}.`);
 
   let exitRoom = false; // Variable to control loop termination
 
