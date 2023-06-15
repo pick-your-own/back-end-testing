@@ -8,6 +8,7 @@ const socket = io('http://localhost:3001');
 const { eventPool } = require('../../src/eventPool');
 const { User } = require('../../src/models/User');
 const readline = require('readline');
+const { dungeonEasyOdds } = require('../../dungeons');
 
 console.log('YO');
 
@@ -43,7 +44,7 @@ socket.on(eventPool.GAME_INQ, () => {
                 // Compare the entered password with the password in the database
                 if (enteredPassword === user.password) {
                   username = user.name;
-                  socket.emit(eventPool.JOIN);
+                  socket.emit(eventPool.JOIN, username);
                 } else {
                   console.log('Incorrect password');
                 }
@@ -84,7 +85,7 @@ socket.on(eventPool.GAME_INQ, () => {
     });
 });
 
-socket.on(eventPool.ROOM_MENU, () => {
+socket.on(eventPool.ROOM_MENU, (username) => {
   inquirer.prompt([
     {
       name: 'menuChoice',
@@ -107,7 +108,7 @@ socket.on(eventPool.ROOM_MENU, () => {
         break;
       case 2:
         console.log('Selected: Play with friends');
-        socket.emit(eventPool.CHAT_JOINED && eventPool.DUNGEON_CREATE, 'joinFriends');
+        socket.emit(eventPool.DUNGEON_CREATE, username);
         break;
       case 3:
         console.log('Selected: Play alone');
@@ -124,7 +125,7 @@ socket.on(eventPool.ROOM_MENU, () => {
     });
 });
 
-socket.on(eventPool.DUNGEON_MENU, () => {
+socket.on(eventPool.DUNGEON_MENU, (username) => {
   inquirer.prompt([
     {
       name: 'dungeonOptions',
@@ -142,15 +143,15 @@ socket.on(eventPool.DUNGEON_MENU, () => {
       switch (selectedOption) {
       case 1:
         console.log('Selected easy');
-        socket.emit(eventPool.DUNGEON_JOIN_EASY);
+        socket.emit(eventPool.DUNGEON_JOIN_EASY, username);
         break;
       case 2:
         console.log('Selected normal');
-        socket.emit(eventPool.DUNGEON_JOIN_NORMAL);
+        socket.emit(eventPool.DUNGEON_JOIN_NORMAL, username);
         break;
       case 3:
         console.log('Selected hard');
-        socket.emit(eventPool.DUNGEON_JOIN_HARD);
+        socket.emit(eventPool.DUNGEON_JOIN_HARD, username);
         break;
       }
     });
@@ -195,12 +196,14 @@ socket.on(eventPool.CREATE_ROOM_SUCCESS, (roomId) => {
   socket.emit(eventPool.JOIN_ROOM, roomId);
 });
 
-socket.on(eventPool.JOIN_ROOM_SUCCESS, (roomId) => {
-  console.log(`Joined room. ID: ${roomId}`);
+socket.on(eventPool.USER_LEFT_ROOM, (payload) => {
+  console.log('stuff here! ====>');
+  console.log(payload);
 });
 
-socket.on(eventPool.JOIN_ROOM_ERROR, (error) => {
-  console.error('Error joining room:', error);
+socket.on(eventPool.JOIN_ROOM_ERROR, (username) => {
+  dungeonEasyOdds(username);
+  // console.error('Error joining room:', error);
 });
 
 socket.on(eventPool.USER_JOINED_ROOM, (userList) => {
@@ -208,10 +211,10 @@ socket.on(eventPool.USER_JOINED_ROOM, (userList) => {
   console.log('Connected users:', userList);
 });
 
-socket.on(eventPool.USER_LEFT_ROOM, (userList) => {
-  console.log('User left the room');
-  console.log('Connected users:', userList);
-});
+// socket.on(eventPool.USER_LEFT_ROOM, (pay) => {
+//   console.log('stuff here! ====>');
+//   console.log(payload);
+// });
 
 socket.on(eventPool.CLOSE, () => {
   process.exit(0);

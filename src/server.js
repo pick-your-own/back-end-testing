@@ -7,6 +7,7 @@ const server = require('http').createServer(app);
 const { Server } = require('socket.io');
 // const { User, Character } = require('./models');
 const { eventPool } = require('./eventPool');
+const { dungeonEasyOdds, dungeonHardOdds, dungeonNormalOdds } = require('../dungeons');
 // const { characterController, userController } = require('./controllers');
 // const { generateEncounter, createDungeonRoom, handleAttackAction } = require('../dungeons');
 // io server singleton
@@ -39,9 +40,9 @@ io.on('connection', (socket) => {
   socket.emit(eventPool.GAME_INQ);
 
   // notification for player join room
-  socket.on(eventPool.JOIN, () => {
-    console.log('player logged in');
-    socket.emit(eventPool.ROOM_MENU);
+  socket.on(eventPool.JOIN, (username) => {
+    console.log(`${username} logged in`);
+    socket.emit(eventPool.ROOM_MENU, username);
   });
 
   socket.on(eventPool.CHAT_JOINED, (room) => {
@@ -59,24 +60,34 @@ io.on('connection', (socket) => {
     io.emit(eventPool.SEND_MESSAGE,  message);
   });
 
-  socket.on(eventPool.DUNGEON_CREATE, () => {
+  socket.on(eventPool.DUNGEON_CREATE, (username) => {
     console.log('Dungeon Created');
-    socket.emit(eventPool.DUNGEON_MENU);
+    socket.emit(eventPool.DUNGEON_MENU, username);
   });
   
   socket.on(eventPool.DUNGEON_JOIN_HARD, () => {
-    createDungeonRoom();
+    // createDungeonRoom();
+    dungeonHardOdds();
     console.log('Dungeon hard mode');
   });
   
   socket.on(eventPool.DUNGEON_JOIN_NORMAL, () => {
-    createDungeonRoom();
+    // createDungeonRoom();
+    dungeonNormalOdds();
     console.log('Dungeon normal mode');
   });
 
-  socket.on(eventPool.DUNGEON_JOIN_EASY, () => {
-    createDungeonRoom();
+  socket.on(eventPool.DUNGEON_JOIN_EASY, (username) => {
+    // createDungeonRoom();
+    // dungeonEasyOdds(username);
+    // socket.emit(eventPool.JOIN_ROOM_SUCCESS);
     console.log('Dungeon easy mode');
+    socket.emit(eventPool.JOIN_ROOM_ERROR, username);
+  });
+
+  socket.on(eventPool.JOIN_ROOM_SUCCESS, (payload) => {
+    // console.log(payload);
+    socket.emit(eventPool.USER_LEFT_ROOM, payload);
   });
 
 
@@ -260,8 +271,8 @@ io.on('connection', (socket) => {
   //   },
   // );
   // notification for player disconnect
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
+  socket.on('disconnect', (username) => {
+    console.log(`${username} disconnected`);
   });
 
   socket.onAny((event, payload) => {

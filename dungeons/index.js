@@ -7,6 +7,8 @@ const socket = io('http://localhost:3001');
 const inquirer = require('inquirer');
 const { eventPool } = require('../src/eventPool');
 const { Dungeon } = require('../src/models/Dungeon');
+const { Loot } = require('../src/models/loot');
+const { User } = require('../src/models/User');
 
 console.log('RAWR');
 
@@ -17,25 +19,25 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 const db = mongoose.connection;
 
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', async () => {
-  console.log('Connected to Mongo');
-  const dungeons = await Dungeon.find({});
-  console.log(dungeons);
-  const dungeon = dungeons[0];
-  console.log(dungeon);
-  const events = dungeon.events;
-  console.log(events);
-  const event = events[0];
-  console.log(event);
-  const eventObj = eventPool[event];
-  console.log(eventObj);
-  const eventInstance = new eventObj();
-  console.log(eventInstance);
-  const eventResult = await eventInstance.run();
-  console.log(eventResult);
-  process.exit();
-});
+// db.on('error', console.error.bind(console, 'connection error:'));
+// db.once('open', async () => {
+//   console.log('Connected to Mongo');
+//   const dungeons = await Dungeon.find({});
+//   console.log(dungeons);
+//   const dungeon = dungeons[0];
+//   console.log(dungeon);
+//   const events = dungeon.events;
+//   console.log(events);
+//   const event = events[0];
+//   console.log(event);
+//   const eventObj = eventPool[event];
+//   console.log(eventObj);
+//   const eventInstance = new eventObj();
+//   console.log(eventInstance);
+//   const eventResult = await eventInstance.run();
+//   console.log(eventResult);
+//   process.exit();
+// });
 
 
 socket.on(eventPool.DUNGEON_CREATE, () => {
@@ -75,89 +77,209 @@ function generateEncounter(playerGearScore, enemyLevel) {
 }
 
 // Function to handle the attack action
-async function handleAttackAction(playerGearScore, enemyLevel) {
-  // Implement your battle mechanics here based on playerGearScore and enemyLevel
-  // Determine the outcome of the attack, calculate damage, update player/enemy health, etc.
+// async function handleAttackAction(playerGearScore, enemyLevel) {
+//   // Implement your battle mechanics here based on playerGearScore and enemyLevel
+//   // Determine the outcome of the attack, calculate damage, update player/enemy health, etc.
 
-  let playerHealth = 100;
-  let enemyHealth = 100;
+//   let playerHealth = 100;
+//   let enemyHealth = 100;
 
-  // Calculate damage based on player gear score and enemy level
-  const playerDamage = Math.floor(Math.random() * playerGearScore);
-  const enemyDamage = Math.floor(Math.random() * enemyLevel);
+//   // Calculate damage based on player gear score and enemy level
+//   const playerDamage = Math.floor(Math.random() * playerGearScore);
+//   const enemyDamage = Math.floor(Math.random() * enemyLevel);
 
-  // Update player/enemy health, handle defeat/victory conditions, etc.
-  playerHealth -= enemyDamage;
-  enemyHealth -= playerDamage;
-  
-  console.log(`You dealt ${playerDamage} damage to the enemy.`);
-  console.log(`The enemy dealt ${enemyDamage} damage to you.`);
+//   // Update player/enemy health, handle defeat/victory conditions, etc.
+//   playerHealth -= enemyDamage;
+//   enemyHealth -= playerDamage;
 
-  // Assuming the battle continues
-  // Check defeat/victory conditions
-  if (playerHealth <= 0) {
-    console.log('You have been defeated. Game over.');
-    // Implement game over logic here, such as resetting progress or ending the game
-  } else if (enemyHealth <= 0) {
-    console.log('Congratulations! You have defeated the enemy.');
-    // Implement victory logic here, such as gaining rewards or progressing to the next level
-    const loot = eventPool.CHARACTER_ACTION_PICKUP;
+//   console.log(`You dealt ${playerDamage} damage to the enemy.`);
+//   console.log(`The enemy dealt ${enemyDamage} damage to you.`);
 
-    // Process the loot event
-    console.log(`You have received ${loot} from the enemy.`);
-  } else {
-    console.log(`Player Health: ${playerHealth}`);
-    console.log(`Enemy Health: ${enemyHealth}`);
-    // The battle continues since neither the player nor the enemy is defeated
-    // You can continue the battle or provide more options to the player
-  }
-}
+//   // Assuming the battle continues
+//   // Check defeat/victory conditions
+//   if (playerHealth <= 0) {
+//     console.log('You have been defeated. Game over.');
+//     // Implement game over logic here, such as resetting progress or ending the game
+//   } else if (enemyHealth <= 0) {
+//     console.log('Congratulations! You have defeated the enemy.');
+//     // Implement victory logic here, such as gaining rewards or progressing to the next level
+//     const loot = eventPool.CHARACTER_ACTION_PICKUP;
 
-// Function to create a dungeon room and await encounters
-async function createDungeonRoom(playerGearScore, roomLevel) {
-  console.log('Welcome to the dungeon room!');
+//     // Process the loot event
+//     console.log(`You have received ${loot} from the enemy.`);
+//   } else {
+//     console.log(`Player Health: ${playerHealth}`);
+//     console.log(`Enemy Health: ${enemyHealth}`);
+//     // The battle continues since neither the player nor the enemy is defeated
+//     // You can continue the battle or provide more options to the player
+//   }
+// }
 
-  let exitRoom = false; // Variable to control loop termination
+// // Function to create a dungeon room and await encounters
+// async function createDungeonRoom(playerGearScore, roomLevel) {
+//   console.log('Welcome to the dungeon room!');
 
-  while (!exitRoom) {
-    // Generate a random enemy level based on the room level
-    const enemyLevel = roomLevel + Math.floor(Math.random() * 3);
+//   let exitRoom = false; // Variable to control loop termination
 
-    // Generate an encounter based on the player's gear score and the enemy level
-    const encounter = generateEncounter(playerGearScore, enemyLevel);
+//   while (!exitRoom) {
+//     // Generate a random enemy level based on the room level
+//     const enemyLevel = roomLevel + Math.floor(Math.random() * 3);
 
-    console.log(encounter.message);
+//     // Generate an encounter based on the player's gear score and the enemy level
+//     const encounter = generateEncounter(playerGearScore, enemyLevel);
 
-    // Fetch the player's chosen action from the event pool
-    const playerAction = await inquirer.prompt({
-      type: 'list',
-      name: 'action',
-      message: 'What would you like to do?',
-      choices: Object.values(eventPool), // Use the event pool choices for the prompt
-    });
+//     console.log(encounter.message);
 
-    // Handle the player's chosen action
-    if (playerAction.action === eventPool.CHARACTER_ACTION_ATTACK) {
-      await handleAttackAction(playerGearScore, enemyLevel);
-    } else if (playerAction.action === eventPool.CHARACTER_ACTION_DEFEND) {
-      console.log('You defend against the enemy attack.');
-    } else if (playerAction.action === eventPool.CHARACTER_ACTION_HEAL) {
-      console.log('You heal yourself.');
-    } else if (playerAction.action === eventPool.CHARACTER_ACTION_CUSTOM) {
-      console.log('You perform a custom action.'); 
-    } else if (playerAction.action === eventPool.CHARACTER_ACTION_FLEE) {
-      console.log('You managed to escape from the dungeon room.');
-      exitRoom = true;
-    }
-  }
+//     // Fetch the player's chosen action from the event pool
+//     const playerAction = await inquirer.prompt({
+//       type: 'list',
+//       name: 'action',
+//       message: 'What would you like to do?',
+//       choices: Object.values(eventPool), // Use the event pool choices for the prompt
+//     });
 
-  console.log('Exiting the dungeon room.');
-}
+//     // Handle the player's chosen action
+//     if (playerAction.action === eventPool.CHARACTER_ACTION_ATTACK) {
+//       await handleAttackAction(playerGearScore, enemyLevel);
+//     } else if (playerAction.action === eventPool.CHARACTER_ACTION_DEFEND) {
+//       console.log('You defend against the enemy attack.');
+//     } else if (playerAction.action === eventPool.CHARACTER_ACTION_HEAL) {
+//       console.log('You heal yourself.');
+//     } else if (playerAction.action === eventPool.CHARACTER_ACTION_CUSTOM) {
+//       console.log('You perform a custom action.');
+//     } else if (playerAction.action === eventPool.CHARACTER_ACTION_FLEE) {
+//       console.log('You managed to escape from the dungeon room.');
+//       exitRoom = true;
+//     }
+//   }
+
+//   console.log('Exiting the dungeon room.');
+// }
 
 //! Example usage
 const playerGearScore = 100;
 const roomLevel = 5;
 
-createDungeonRoom(playerGearScore, roomLevel);
+// createDungeonRoom(playerGearScore, roomLevel);
 
-module.exports = { generateEncounter, createDungeonRoom, handleAttackAction };
+const story = () => {
+  console.log('long in depth story hopefully done by AI');
+};
+
+
+const easyLoot = async (username) => {
+  let reward = '';
+  const lootOdds = Math.floor(Math.random() * 100);
+  // let reward;
+  if (lootOdds < 80) {
+    let loot = await Loot.findOne({ rarity: 'normal' }).exec();
+    reward = loot ? loot.name : '';
+  } else if (lootOdds < 95 && lootOdds > 80) {
+    let loot = await Loot.findOne({ rarity: 'rare' }).exec();
+    reward = loot ? loot.name : '';
+  } else if (lootOdds > 95 && lootOdds < 101) {
+    let loot = await Loot.findOne({ rarity: 'legendary' }).exec();
+    reward = loot ?  loot.name : '';
+  }
+  console.log('loot', reward);
+  
+  if (reward) {
+    const user = await User.findOne({ name: username }).exec();
+    if (user != null) {
+      const loot = await Loot.findOne({ name: reward }).exec();
+      if (loot) {
+        user.acquiredLoot.push(loot); // Push the loot's ObjectId
+        await user.save();
+      }
+    } else if (user === null) {
+      console.log(`User ${username} not found.`);
+    }
+  }
+
+  return reward;
+  
+};
+
+const normalLoot = async () => {
+  console.log('Noraml Loot here ------> ', normalLoot);
+  let reward = '';
+  const lootOdds = Math.floor(Math.random() * 100);
+  // let reward;
+  if (lootOdds < 70) {
+    let loot = await Loot.findOne({ rarity: 'normal' }).exec();
+    console.log('Loooot=======>', loot);
+    reward = loot ? loot.name : '';
+  } else if (lootOdds < 85 && lootOdds > 70) {
+    let loot = await Loot.findOne({ rarity: 'rare' }).exec();
+    console.log('Loooot=======>', loot);
+    reward = loot ? loot.name : '';
+  } else if (lootOdds > 85 && lootOdds < 101) {
+    let loot = await Loot.findOne({ rarity: 'legendary' }).exec();
+    console.log('Loooot=======>', loot);
+    reward = loot ?  loot.name : '';
+  }
+  console.log('loot', reward);
+  return reward;
+};
+
+
+const hardLoot = async () => {
+  console.log('Hard Loot here ------> ', hardLoot);
+  let reward = '';
+  const lootOdds = Math.floor(Math.random() * 100);
+  // let reward;
+  if (lootOdds < 60) {
+    let loot = await Loot.findOne({ rarity: 'normal' }).exec();
+   
+    reward = loot ? loot.name : '';
+  } else if (lootOdds < 75 && lootOdds > 90) {
+    let loot = await Loot.findOne({ rarity: 'rare' }).exec();
+    
+    reward = loot ? loot.name : '';
+  } else if (lootOdds > 75 && lootOdds < 101) {
+    let loot = await Loot.findOne({ rarity: 'legendary' }).exec();
+    
+    reward = loot ?  loot.name : '';
+  }
+  
+  return reward;
+};
+
+
+
+const dungeonEasyOdds = (username) => {
+  story();
+  let score = Math.floor(Math.random() * 100);
+  if (score >= 25) {
+    console.log('You win!');
+    easyLoot(username);
+
+  } else if(score < 25) { 
+    console.log('You lose');
+  }
+};
+
+const dungeonNormalOdds = () => {
+  story();
+  let oddResult = Math.floor(Math.random() * 100);
+  if (oddResult > 50) {
+    console.log('You Win!');
+    normalLoot();
+  } else {
+    
+    console.log('You Lose!');
+  }
+};
+
+
+const dungeonHardOdds = () => {
+  story();
+  let score = Math.floor(Math.random() * 100);
+  if (score > 75) {
+    console.log('You Win!');
+    hardLoot();
+  } else {
+    console.log('You Lose!');
+  }
+};
+module.exports = { generateEncounter, dungeonEasyOdds, dungeonNormalOdds, dungeonHardOdds };

@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  acquiredLoot: [{
+    type: mongoose.Schema.Types.Object,
+    ref: 'Loot',
+  }],
 });
 
 const User = mongoose.model('user', userSchema);

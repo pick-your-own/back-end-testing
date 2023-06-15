@@ -21,7 +21,7 @@ const lootSchema = new mongoose.Schema({
   },
 });
 
-const Loot = mongoose.model('Loot', lootSchema);
+const Loot = mongoose.model('loot', lootSchema);
 
 module.exports = {
   Loot,
