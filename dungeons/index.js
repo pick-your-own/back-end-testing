@@ -118,7 +118,7 @@ async function handleAttackAction(playerGearScore, enemyLevel) {
 
     // Level Up the player
     // const levelUpEvent = eventPool.CHARACTER_ACTION_LEVELED_UP;
-    // eventEmitter.emit(levelUpEvent); //! Remember to add Listener for CHARACTER_LEVELED_UP event
+    // eventEmitter.emit(levelUpEvent); //! Remember to add Listener for CHARACTER_LEVELED_UP event. *Might have to put this after all combat and loot goes out.
 
   } else {
     console.log(`Player Health: ${playerHealth}`);
