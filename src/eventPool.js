@@ -79,23 +79,16 @@ const eventPool = {
 
   // Dungeon Events
   DUNGEON_CREATE: 'dungeon_create',
-  DUNGEON_CREATE_SUCCESS: 'dungeon_create_success',
   DUNGEON_CREATE_ERROR: 'dungeon_create_error',
   DUNGEON_JOIN: 'dungeon_join',
-  DUNGEON_JOIN_SUCCESS: 'dungeon_join_success',
   DUNGEON_JOIN_ERROR: 'dungeon_join_error',
   DUNGEON_START: 'dungeon_start',
-  DUNGEON_START_SUCCESS: 'dungeon_start_success',
   DUNGEON_START_ERROR: 'dungeon_start_error',
   DUNGEON_COMPLETE: 'dungeon_complete',
-  DUNGEON_COMPLETE_SUCCESS: 'dungeon_complete_success',
   DUNGEON_FAIL: 'dungeon_fail',
   DUNGEON_LEAVE: 'dungeon_leave',
-  DUNGEON_LEAVE_SUCCESS: 'dungeon_leave_success',
-  DUNGEON_LEAVE_ERROR: 'dungeon_leave_error',
-  DUNGEON_LIST: 'dungeon_list',
-  DUNGEON_LIST_SUCCESS: 'dungeon_list_success',
-  DUNGEON_LIST_ERROR: 'dungeon_list_error',
+  DUNGEON_MENU: 'dungeon_menu',
+  DUNGEON_MENU_ERROR: 'dungeon_list_error',
 };
 
 module.exports = {
